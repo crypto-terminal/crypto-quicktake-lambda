@@ -1,0 +1,17 @@
+{
+    "name": "crypto-quicktake-lambda",
+    "version": "1.0.0",
+    "description": "the lambda functions of Crypto Quicktake",
+    "main": "index.js",
+    "private": true,
+    "scripts": {
+        "build": "mkdir build && cp index.html build/",
+        "start": "netlify dev",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "yumindev",
+    "dependencies": {
+        "lodash": "^4.17.21",
+        "node-fetch": "^2.6.1"
+    }
+}
