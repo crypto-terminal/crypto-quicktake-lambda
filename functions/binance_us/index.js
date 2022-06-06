@@ -12,6 +12,7 @@ const BASE_URL = "https://api.binance.us";
 const ENDPOINTS = {
     USER_ACCOUNT: "/api/v3/account",
     USER_STATUS: "/wapi/v3/accountStatus.html",
+    COIN_PRICES: "/api/v3/ticker/price"
   };
   
 
@@ -52,7 +53,7 @@ exports.handler = async function (event, context) {
     const signature = getSignature(API_SECRET, timestamp);
     const query = getQuery(signature, timestamp);
 
-    const response = await fetch(
+    const fetchAccountInfo = fetch(
         `${BASE_URL}${ENDPOINTS.USER_ACCOUNT}?${query}`,
         {
         method: "GET",
@@ -61,11 +62,24 @@ exports.handler = async function (event, context) {
         },
         }
     );
-    const json = await response.json();
+    const fetchCoinPrices = fetch(`${BASE_URL}${ENDPOINTS.COIN_PRICES}`);
+
+    const [accountInfoResponse, coinPricesResponse] = await Promise.all([
+        fetchAccountInfo, 
+        fetchCoinPrices
+    ]);
+    const accountInfo= await accountInfoResponse.json();
+    const coinPrices = await coinPricesResponse.json();
+    
+
 
     return {
         statusCode: 200,
         headers,
-        body: JSON.stringify({ success: true, message: "Hello World!", data: json }),
+        body: JSON.stringify({ 
+            success: true, 
+            message: "Hello World!", 
+            data: { accountInfo, coinPrices }
+        }),
     };
 }
