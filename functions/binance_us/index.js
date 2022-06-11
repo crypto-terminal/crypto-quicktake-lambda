@@ -70,7 +70,7 @@ exports.handler = async function (event, context) {
         accountInfo = {
             ...accountInfo,
             balances: accountInfo.balances
-                .filter((balance) => parseInt(balance.free) > 0)
+                .filter((balance) => parseInt(balance.free) > 0 || parseInt(balance.locked) > 0)
                 .map((balance) => {
                     let price = coinPrices.find((p) => p.symbol === `${balance.asset}USD`)?.price;
                     price = price || "0";
