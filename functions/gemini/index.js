@@ -51,7 +51,7 @@ exports.handler = async function (event, context) {
         const payload = JSON.parse(event.body);
         const { pair } = payload;
 
-        if (!pair || !pair.apiKey || !pair.apiSecret || !pair.ex) {
+        if (!pair?.apiKey || !pair?.apiSecret || pair?.ex?.id !== "gemini") {
             return {
                 statusCode: 400,
                 headers,
