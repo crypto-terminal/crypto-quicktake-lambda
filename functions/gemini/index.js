@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const fetch = require("node-fetch");
 
-const headersToAllowCors = {
+const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
@@ -17,7 +17,7 @@ const PATHS = {
 
 const getNonce = () => String(Math.floor(Date.now() / 1000) * 1000);
 
-const getHeaders = (path, API_KEY, API_SECRET) => {
+const getHeadersForGeminiRequest = (path, API_KEY, API_SECRET) => {
     const nonce = getNonce();
     const payload = {
         request: path,
@@ -26,7 +26,7 @@ const getHeaders = (path, API_KEY, API_SECRET) => {
 
     const base64payload = Buffer.from(JSON.stringify(payload)).toString("base64");
     const signature = crypto.createHmac("sha384", API_SECRET).update(base64payload).digest("hex");
-    const headers = {
+    const _headers = {
         "Content-Type": "text/plain",
         "Content-Length": "0",
         "X-GEMINI-APIKEY": API_KEY,
@@ -35,7 +35,7 @@ const getHeaders = (path, API_KEY, API_SECRET) => {
         "Cache-Control": "no-cache",
     };
 
-    return headers;
+    return _headers;
 };
 
 exports.handler = async function (event, context) {
@@ -62,11 +62,15 @@ exports.handler = async function (event, context) {
         const API_KEY = pair.apiKey;
         const API_SECRET = pair.apiSecret;
 
-        const headers = getHeaders(PATHS.ACCOUNT_BALANCES_USD, API_KEY, API_SECRET);
+        const _headers = getHeadersForGeminiRequest(
+            PATHS.ACCOUNT_BALANCES_USD,
+            API_KEY,
+            API_SECRET
+        );
 
         const fetchAccountBalancesUSD = fetch(BASE_URL + PATHS.ACCOUNT_BALANCES_USD, {
             method: "POST",
-            headers,
+            headers: _headers,
         });
 
         const [accountBalancesUSDResponse] = await Promise.all([fetchAccountBalancesUSD]);
@@ -89,7 +93,7 @@ exports.handler = async function (event, context) {
 
         return {
             statusCode: 200,
-            headers: headersToAllowCors,
+            headers,
             body: JSON.stringify({
                 success: true,
                 message: "Hello World!",
@@ -102,7 +106,7 @@ exports.handler = async function (event, context) {
     } catch (err) {
         return {
             statusCode: 200,
-            headers: headersToAllowCors,
+            headers,
             body: JSON.stringify({
                 success: false,
                 message: "error",
