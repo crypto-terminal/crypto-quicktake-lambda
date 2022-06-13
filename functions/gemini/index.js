@@ -1,8 +1,7 @@
 const crypto = require("crypto");
 const fetch = require("node-fetch");
-const Decimal = require("decimal.js");
 
-const headers = {
+const headersToAllowCors = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
@@ -63,7 +62,7 @@ exports.handler = async function (event, context) {
         const API_KEY = pair.apiKey;
         const API_SECRET = pair.apiSecret;
 
-        const headers = getHeaders(PATHS.ACCOUNT_BALANCES, API_KEY, API_SECRET);
+        const headers = getHeaders(PATHS.ACCOUNT_BALANCES_USD, API_KEY, API_SECRET);
 
         const fetchAccountBalancesUSD = fetch(BASE_URL + PATHS.ACCOUNT_BALANCES_USD, {
             method: "POST",
@@ -83,25 +82,27 @@ exports.handler = async function (event, context) {
             };
         });
 
+        const totalBalance = accountBalancesUSD.reduce(
+            (prev, curr) => prev + parseFloat(curr.fiatValue),
+            0
+        );
+
         return {
             statusCode: 200,
-            headers,
+            headers: headersToAllowCors,
             body: JSON.stringify({
                 success: true,
                 message: "Hello World!",
                 data: {
                     accountInfo: { balances: accountBalancesUSD },
-                    totalBalance: accountBalancesUSD.reduce(
-                        (prev, curr) => prev + parseFloat(curr.fiatValue),
-                        0
-                    ),
+                    totalBalance,
                 },
             }),
         };
     } catch (err) {
         return {
             statusCode: 200,
-            headers,
+            headers: headersToAllowCors,
             body: JSON.stringify({
                 success: false,
                 message: "error",
@@ -120,7 +121,7 @@ exports.handler = async function (event, context) {
 //       availableForWithdrawal: '0'
 //     }
 //   ]
-
+// 
 // accountBalancesUSD :>>  [
 //     {
 //       currency: 'SOL',
